@@ -535,13 +535,27 @@ namespace Microsoft.SharePoint.Client
         {
             web.Context.Load(web, w => w.Navigation.QuickLaunch, w => w.Navigation.TopNavigationBar);
             web.Context.ExecuteQueryRetry();
-            var node = new NavigationNodeCreationInformation
+            NavigationNodeCreationInformation node;
+            if (nodeUri != null)
             {
-                AsLastNode = asLastNode,
-                Title = nodeTitle,
-                Url = nodeUri != null ? nodeUri.OriginalString : string.Empty,
-                IsExternal = isExternal
-            };
+                node = new NavigationNodeCreationInformation
+                {
+                    AsLastNode = asLastNode,
+                    Title = nodeTitle,
+                    Url = nodeUri != null ? nodeUri.OriginalString : string.Empty,
+                    IsExternal = isExternal
+                };
+            }
+            else{
+                node = new NavigationNodeCreationInformation
+                {
+                    AsLastNode = asLastNode,
+                    Title = nodeTitle,
+                    IsExternal = isExternal
+                };
+            }
+
+
 
             NavigationNode navigationNode = null;
             try
@@ -569,7 +583,7 @@ namespace Microsoft.SharePoint.Client
                     }
                     else
                     {
-                        navigationNode = topLink.Add(node);
+                        navigationNode = topLink.Add(node);                       
                     }
                 }
                 else if (navigationType == NavigationType.SearchNav)
@@ -679,6 +693,8 @@ namespace Microsoft.SharePoint.Client
                 web.Context.Load(web, w => w.Navigation.TopNavigationBar);
                 web.Context.ExecuteQueryRetry();
                 var topNavigation = web.Navigation.TopNavigationBar;
+                web.Context.Load(topNavigation);
+                web.Context.ExecuteQueryRetry();
                 for (var i = topNavigation.Count - 1; i >= 0; i--)
                 {
                     topNavigation[i].DeleteObject();

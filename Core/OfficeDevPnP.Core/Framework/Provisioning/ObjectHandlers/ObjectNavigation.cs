@@ -6,6 +6,7 @@ using OfficeDevPnP.Core.Diagnostics;
 using Microsoft.SharePoint.Client.Publishing.Navigation;
 using Microsoft.SharePoint.Client.Taxonomy;
 using OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers.Extensions;
+using OfficeDevPnP.Core.Entities;
 
 namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
 {
@@ -112,7 +113,6 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                     var navigationSettings = new WebNavigationSettings(web.Context, web);
                     web.Context.Load(navigationSettings, ns => ns.CurrentNavigation, ns => ns.GlobalNavigation);
                     web.Context.ExecuteQueryRetry();
-
                     if (template.Navigation.GlobalNavigation != null)
                     {
                         switch (template.Navigation.GlobalNavigation.NavigationType)
@@ -122,6 +122,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                                 web.Navigation.UseShared = true;
                                 break;
                             case GlobalNavigationType.Managed:
+                                web.Navigation.UseShared = false;
                                 if (template.Navigation.GlobalNavigation.ManagedNavigation == null)
                                 {
                                     throw new ApplicationException(CoreResources.Provisioning_ObjectHandlers_Navigation_missing_global_managed_navigation);
@@ -132,10 +133,16 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                                 break;
                             case GlobalNavigationType.Structural:
                             default:
+                                web.Navigation.UseShared = false;
                                 if (template.Navigation.GlobalNavigation.StructuralNavigation == null)
                                 {
                                     throw new ApplicationException(CoreResources.Provisioning_ObjectHandlers_Navigation_missing_global_structural_navigation);
                                 }
+
+                                navigationSettings.GlobalNavigation.Source = StandardNavigationSource.PortalProvider;
+
+                                navigationSettings.Update(TaxonomySession.GetTaxonomySession(web.Context));
+
                                 ProvisionGlobalStructuralNavigation(web,
                                     template.Navigation.GlobalNavigation.StructuralNavigation, parser, applyingInformation.ClearNavigation, scope);
                                 break;
@@ -166,6 +173,9 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                                 {
                                     throw new ApplicationException(CoreResources.Provisioning_ObjectHandlers_Navigation_missing_current_structural_navigation);
                                 }
+                                navigationSettings.CurrentNavigation.Source = StandardNavigationSource.PortalProvider;
+
+
                                 ProvisionCurrentStructuralNavigation(web,
                                     template.Navigation.CurrentNavigation.StructuralNavigation, parser, applyingInformation.ClearNavigation, scope);
                                 break;
@@ -175,6 +185,9 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                                 {
                                     throw new ApplicationException(CoreResources.Provisioning_ObjectHandlers_Navigation_missing_current_structural_navigation);
                                 }
+                                navigationSettings.CurrentNavigation.Source = StandardNavigationSource.PortalProvider;
+                                web.SetPropertyBagValue(NavigationShowSiblings, "true");
+
                                 ProvisionCurrentStructuralNavigation(web,
                                     template.Navigation.CurrentNavigation.StructuralNavigation, parser, applyingInformation.ClearNavigation, scope);
                                 break;
@@ -262,8 +275,11 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
             var navigationType = currentNavigation ?
                 Enums.NavigationType.QuickLaunch :
                 Enums.NavigationType.TopNavigationBar;
+           
             if (structuralNavigation != null)
             {
+              
+
                 // Remove existing nodes, if requested
                 if (structuralNavigation.RemoveExistingNodes || clearNavigation)
                 {
@@ -272,7 +288,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                         WriteMessage("You chose to override the template value RemoveExistingNodes=\"false\" by specifying ClearNavigation", ProvisioningMessageType.Warning);
                         ClearWarningShown = true;
                     }
-                    web.DeleteAllNavigationNodes(navigationType);
+                   web.DeleteAllNavigationNodes(navigationType);
                 }
 
                 // Provision root level nodes, and children recursively
@@ -293,9 +309,13 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
         {
             foreach (var node in nodes)
             {
+                Uri nodeUri = null;
+                if(node.Url != null){
+                    nodeUri = new Uri(parser.ParseString(node.Url), UriKind.RelativeOrAbsolute);
+                }
                 var navNode = web.AddNavigationNode(
                     parser.ParseString(node.Title),
-                    new Uri(parser.ParseString(node.Url), UriKind.RelativeOrAbsolute),
+                    nodeUri,
                     parser.ParseString(parentNodeTitle),
                     navigationType,
                     node.IsExternal);

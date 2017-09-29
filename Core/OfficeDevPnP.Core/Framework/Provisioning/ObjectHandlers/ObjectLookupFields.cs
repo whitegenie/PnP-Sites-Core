@@ -64,9 +64,21 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                     var relationshipDeleteBehavior = fieldElement.Attribute("RelationshipDeleteBehavior") != null ? fieldElement.Attribute("RelationshipDeleteBehavior").Value : string.Empty;
                     var webId = string.Empty;
 
-                    var field = rootWeb.Fields.GetById(fieldId);
-                    rootWeb.Context.Load(field, f => f.SchemaXmlWithResourceTokens);
-                    rootWeb.Context.ExecuteQueryRetry();
+                    //First search in the web
+                    var field = web.Fields.GetById(fieldId);
+                    if (field != null)
+                    {
+                        web.Context.Load(field, f => f.SchemaXmlWithResourceTokens);
+                        web.Context.ExecuteQueryRetry();
+                    }
+                    else
+                    {
+                        //then search in the root -- It should not be necessary!!!
+                        field = rootWeb.Fields.GetById(fieldId);
+
+                        rootWeb.Context.Load(field, f => f.SchemaXmlWithResourceTokens);
+                        rootWeb.Context.ExecuteQueryRetry();
+                    }
 
                     List sourceList = FindSourceList(listIdentifier, web, rootWeb);
 
@@ -79,6 +91,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
 
                         ProcessField(field, sourceList.Id, webId, relationshipDeleteBehavior);
                     }
+
                 }
             }
 
