@@ -146,49 +146,50 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.Providers.Xml
                                     source = (TSchemaTemplate)t;
                                 }
                             }
+                        }
 
-                            if (source == null)
+                        if (source == null)
+                        {
+                            var provisioningTemplateFiles = templates.GetType()
+                                .GetProperty("ProvisioningTemplateFile",
+                                    System.Reflection.BindingFlags.Instance |
+                                    System.Reflection.BindingFlags.Public |
+                                    System.Reflection.BindingFlags.IgnoreCase).GetValue(templates);
+
+                            // If we don't have a template, but there are external file references
+                            if (source == null && provisioningTemplateFiles != null)
                             {
-                                var provisioningTemplateFiles = templates.GetType()
-                                    .GetProperty("ProvisioningTemplateFile",
+                                foreach (var f in (IEnumerable)provisioningTemplateFiles)
+                                {
+                                    var templateId = (String)f.GetType().GetProperty("ID",
                                         System.Reflection.BindingFlags.Instance |
                                         System.Reflection.BindingFlags.Public |
-                                        System.Reflection.BindingFlags.IgnoreCase).GetValue(templates);
+                                        System.Reflection.BindingFlags.IgnoreCase).GetValue(f);
 
-                                // If we don't have a template, but there are external file references
-                                if (source == null && provisioningTemplateFiles != null)
-                                {
-                                    foreach (var f in (IEnumerable)provisioningTemplateFiles)
+                                    if ((templateId != null && templateId == identifier) || String.IsNullOrEmpty(identifier))
                                     {
-                                        var templateId = (String)f.GetType().GetProperty("ID",
+                                        // Let's see if we have an external file for the template
+                                        var externalFile = (String)f.GetType().GetProperty("File",
                                             System.Reflection.BindingFlags.Instance |
                                             System.Reflection.BindingFlags.Public |
                                             System.Reflection.BindingFlags.IgnoreCase).GetValue(f);
 
-                                        if ((templateId != null && templateId == identifier) || String.IsNullOrEmpty(identifier))
+                                        Stream externalFileStream = this.Provider.Connector.GetFileStream(externalFile);
+                                        xml = XDocument.Load(externalFileStream);
+
+                                        if (xml.Root.Name != pnp + "ProvisioningTemplate")
                                         {
-                                            // Let's see if we have an external file for the template
-                                            var externalFile = (String)f.GetType().GetProperty("File",
-                                                System.Reflection.BindingFlags.Instance |
-                                                System.Reflection.BindingFlags.Public |
-                                                System.Reflection.BindingFlags.IgnoreCase).GetValue(f);
-
-                                            Stream externalFileStream = this.Provider.Connector.GetFileStream(externalFile);
-                                            xml = XDocument.Load(externalFileStream);
-
-                                            if (xml.Root.Name != pnp + "ProvisioningTemplate")
-                                            {
-                                                throw new ApplicationException("Invalid external file format. Expected a ProvisioningTemplate file!");
-                                            }
-                                            else
-                                            {
-                                                source = XMLSerializer.Deserialize<TSchemaTemplate>(xml);
-                                            }
+                                            throw new ApplicationException("Invalid external file format. Expected a ProvisioningTemplate file!");
+                                        }
+                                        else
+                                        {
+                                            source = XMLSerializer.Deserialize<TSchemaTemplate>(xml);
                                         }
                                     }
                                 }
                             }
                         }
+
 
                         if (source != null)
                         {
