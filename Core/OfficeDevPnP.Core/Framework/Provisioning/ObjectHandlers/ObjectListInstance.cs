@@ -1203,6 +1203,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                 if (existingList.BaseTemplate != (int)ListTemplateType.Survey &&
                     existingList.BaseTemplate != (int)ListTemplateType.DocumentLibrary &&
                     existingList.BaseTemplate != (int)ListTemplateType.PictureLibrary &&
+                    existingList.BaseTemplate != 851 && // 851 = Picture library on publishing site
                     existingList.BaseTemplate != 850) // 850 = Pages library on publishing site
                 {
                     // https://msdn.microsoft.com/EN-US/library/microsoft.sharepoint.splist.enableattachments.aspx
