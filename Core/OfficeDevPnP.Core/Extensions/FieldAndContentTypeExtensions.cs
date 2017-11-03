@@ -1773,11 +1773,17 @@ namespace Microsoft.SharePoint.Client
                     newOrder.Add(ctype.Id);
             }
 
+            // remove the folder content type
+            newOrder = newOrder.Except(newOrder.Where(id => id.StringValue.StartsWith("0x012000"))).ToList();
+
             list.RootFolder.UniqueContentTypeOrder = newOrder;
             list.RootFolder.Update();
             list.Update();
             list.Context.ExecuteQueryRetry();
         }
+
+      
+
 
         #endregion
 

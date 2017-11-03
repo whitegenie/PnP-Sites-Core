@@ -1441,18 +1441,71 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                         }
                     }
 
+                    // ContentTypes should reordered last because 
+                    // list extension .ReorderContentTypes() re-sets 
+                    // the list.RootFolder UniqueContentTypeOrder property
+                    // which may cause missing CTs from the "New Button"
+                    //It sets default ContentTypeBinding too.
+
+                    //Reload update existing content types
+                    existingContentTypes = existingList.ContentTypes;
+                    web.Context.Load(existingContentTypes, cts => cts.Include(ct => ct.StringId, ct => ct.Name, ct=>ct.Id, ct => ct.Parent, ct => ct.Parent.StringId));
+                    web.Context.ExecuteQueryRetry();                   
+
+                    var ctOrderedList = new List<ContentType>();
+
+                    //Add default as first
+                    if (defaultCtBinding != null)
+                    {
+                        var defaultCt = existingContentTypes.Where(ct => defaultCtBinding.ContentTypeId.Equals(ct.Parent.StringId, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+
+
+                        if (defaultCt != null)
+                        {
+                            ctOrderedList.Add(defaultCt);
+                        }
+                    }
+
+
+                    //Add others not hidden bindings
+                    for(int i=0; i < templateList.ContentTypeBindings.Count; i++)
+                    {
+                        var ctb = templateList.ContentTypeBindings[i];
+                        if(!ctb.Default && !ctb.Hidden && !ctb.Remove)
+                        {
+                            var ctype = existingContentTypes.FirstOrDefault(ct => ct.Parent.StringId == ctb.ContentTypeId);
+                            if (ctype != null)
+                            {
+                                ctOrderedList.Add(ctype);
+                            }
+                        }
+                    }
+
+                    var excludeCtb = templateList.ContentTypeBindings.Where(ctb => ctb.Default || ctb.Hidden);
+
+                    //Add all not included or hidden content types
+                    foreach(var ct in existingContentTypes)
+                    {
+                        if(!ctOrderedList.Contains(ct) && excludeCtb.All(ctb => !ct.Parent.StringId.Equals(ctb.ContentTypeId, StringComparison.InvariantCultureIgnoreCase)))
+                        {
+                            ctOrderedList.Add(ct);
+                        }
+                    }
+
+                     existingList.ReorderContentTypes(ctOrderedList.Select(ct => ct.Name));
+
                     // default ContentTypeBinding should be set last because 
                     // list extension .SetDefaultContentTypeToList() re-sets 
                     // the list.RootFolder UniqueContentTypeOrder property
                     // which may cause missing CTs from the "New Button"
-                    if (defaultCtBinding != null)
-                    {
+                 //   if (defaultCtBinding != null)
+                  //  {
                         // Only update the defualt contenttype when we detect a change in default value
-                        if (!currentDefaultContentTypeId.Equals(defaultCtBinding.ContentTypeId, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            existingList.SetDefaultContentTypeToList(defaultCtBinding.ContentTypeId);
-                        }
-                    }
+                    //    if (!currentDefaultContentTypeId.Equals(defaultCtBinding.ContentTypeId, StringComparison.InvariantCultureIgnoreCase))
+                    //    {
+                    //        existingList.SetDefaultContentTypeToList(defaultCtBinding.ContentTypeId);
+                    //    }
+                   // }
                 }
                 if (templateList.Security != null)
                 {
@@ -1753,14 +1806,15 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                     }
                 }
 
+
                 // default ContentTypeBinding should be set last because 
                 // list extension .SetDefaultContentTypeToList() re-sets 
                 // the list.RootFolder UniqueContentTypeOrder property
                 // which may cause missing CTs from the "New Button"
-                if (defaultCtBinding != null)
-                {
-                    createdList.SetDefaultContentTypeToList(defaultCtBinding.ContentTypeId);
-                }
+                //if (defaultCtBinding != null)
+                //{
+                //    createdList.SetDefaultContentTypeToList(defaultCtBinding.ContentTypeId);
+                //}
 
                 // Effectively remove existing content types, if any
                 foreach (var ct in contentTypesToRemove)
@@ -1776,6 +1830,59 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                         web.Context.ExecuteQueryRetry();
                     }
                 }
+
+                // ContentTypes should reordered last because 
+                // list extension .ReorderContentTypes() re-sets 
+                // the list.RootFolder UniqueContentTypeOrder property
+                // which may cause missing CTs from the "New Button"
+                //It sets default ContentTypeBinding too.
+
+                //Reload update existing content types
+                var existingContentTypes = createdList.ContentTypes;
+                web.Context.Load(existingContentTypes, cts => cts.Include(ct => ct.StringId, ct => ct.Name, ct => ct.Id, ct => ct.Parent, ct => ct.Parent.StringId));
+                web.Context.ExecuteQueryRetry();
+
+                var ctOrderedList = new List<ContentType>();
+
+                //Add default as first
+                if (defaultCtBinding != null)
+                {
+                    var defaultCt = existingContentTypes.Where(ct => defaultCtBinding.ContentTypeId.Equals(ct.Parent.StringId, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+
+
+                    if (defaultCt != null)
+                    {
+                        ctOrderedList.Add(defaultCt);
+                    }
+                }
+
+
+                //Add others not hidden bindings
+                for (int i = 0; i < list.ContentTypeBindings.Count; i++)
+                {
+                    var ctb = list.ContentTypeBindings[i];
+                    if (!ctb.Default && !ctb.Hidden && !ctb.Remove)
+                    {
+                        var ctype = existingContentTypes.FirstOrDefault(ct => ct.Parent.StringId == ctb.ContentTypeId);
+                        if (ctype != null)
+                        {
+                            ctOrderedList.Add(ctype);
+                        }
+                    }
+                }
+
+                var excludeCtb = list.ContentTypeBindings.Where(ctb => ctb.Default || ctb.Hidden);
+
+                //Add all not included or hidden content types
+                foreach (var ct in existingContentTypes)
+                {
+                    if (!ctOrderedList.Contains(ct) && excludeCtb.All(ctb => !ct.Parent.StringId.Equals(ctb.ContentTypeId, StringComparison.InvariantCultureIgnoreCase)))
+                    {
+                        ctOrderedList.Add(ct);
+                    }
+                }
+
+                createdList.ReorderContentTypes(ctOrderedList.Select(ct => ct.Name));
             }
 
             // Add any custom action
