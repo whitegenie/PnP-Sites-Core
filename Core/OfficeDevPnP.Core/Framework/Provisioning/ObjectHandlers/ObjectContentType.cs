@@ -35,10 +35,15 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                                                                                          c => c.FieldLinks.Include(fl => fl.Id, fl => fl.Required, fl => fl.Hidden)));
                 web.Context.Load(web.Fields, fld => fld.IncludeWithDefaultProperties(f => f.Id));
 
+                web.Context.Load(web.AvailableContentTypes, ct => ct.IncludeWithDefaultProperties(c => c.StringId, c => c.FieldLinks,
+                                                                         c => c.FieldLinks.Include(fl => fl.Id, fl => fl.Required, fl => fl.Hidden)));
+                web.Context.Load(web.AvailableFields, fld => fld.IncludeWithDefaultProperties(f => f.Id));
+
+
                 web.Context.ExecuteQueryRetry();
 
-                var existingCTs = web.ContentTypes.ToList();
-                var existingFields = web.Fields.ToList();
+                var existingCTs = web.AvailableContentTypes.ToList();// ContentTypes.ToList();
+                var existingFields = web.AvailableFields.ToList();// web.Fields.ToList();
                 var currentCtIndex = 0;
 
                 var doProvision = true;
