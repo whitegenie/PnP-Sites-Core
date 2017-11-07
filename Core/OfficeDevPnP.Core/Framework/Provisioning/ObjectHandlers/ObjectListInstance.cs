@@ -294,8 +294,8 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                         {
                             foreach (var fieldDefault in listInfo.TemplateList.FieldDefaults)
                             {
-                                var field = listInfo.SiteList.Fields.GetByInternalNameOrTitle(fieldDefault.Key);
-                                field.DefaultValue = fieldDefault.Value;
+                                var field = listInfo.SiteList.Fields.GetByInternalNameOrTitle(parser.ParseString(fieldDefault.Key));
+                                field.DefaultValue = parser.ParseString(fieldDefault.Value);
                                 field.Update();
                                 web.Context.ExecuteQueryRetry();
                             }
