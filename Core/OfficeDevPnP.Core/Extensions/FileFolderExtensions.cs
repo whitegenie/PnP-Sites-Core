@@ -967,6 +967,8 @@ namespace Microsoft.SharePoint.Client
             // Create uploadContext to get a proper ClientContext instead of a ClientRuntimeContext
             using (var uploadContext = folder.Context.Clone(folder.Context.Url))
             {
+                uploadContext.AddUserAgent();
+
                 Log.Debug(Constants.LOGGING_SOURCE, "Save binary direct (via webdav) to '{0}'", serverRelativeUrl);
                 File.SaveBinaryDirect(uploadContext, serverRelativeUrl, stream, overwriteIfExists);
                 uploadContext.ExecuteQueryRetry();

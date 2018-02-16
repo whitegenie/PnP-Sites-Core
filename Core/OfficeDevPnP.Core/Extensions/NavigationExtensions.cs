@@ -267,7 +267,9 @@ namespace Microsoft.SharePoint.Client
             }
 
             // If managed metadata navigation is used, set settings related to page creation
-           // if (navigationSettings.GlobalNavigation.ManagedNavigation || navigationSettings.CurrentNavigation.ManagedNavigation)
+            // if (navigationSettings.GlobalNavigation.ManagedNavigation || navigationSettings.CurrentNavigation.ManagedNavigation)
+            if ((navigationSettings.GlobalNavigation.ManagedNavigation || navigationSettings.CurrentNavigation.ManagedNavigation)|| 
+                (navigationSettings.GlobalNavigation.InheritFromParentWeb || navigationSettings.CurrentNavigation.InheritFromParentWeb))
             {
                 webNav.AddNewPagesToNavigation = navigationSettings.AddNewPagesToNavigation;
                 webNav.CreateFriendlyUrlsForNewPages = navigationSettings.CreateFriendlyUrlsForNewPages;

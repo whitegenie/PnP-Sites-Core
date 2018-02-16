@@ -160,6 +160,7 @@ namespace Microsoft.SharePoint.Client
                 var currentUrl = queue.Dequeue();
                 using (var webContext = siteContext.Clone(currentUrl))
                 {
+                    webContext.AddUserAgent();
                     webContext.Load(webContext.Web, web => web.Webs);
                     webContext.ExecuteQueryRetry();
                     foreach (var subWeb in webContext.Web.Webs)
@@ -239,6 +240,7 @@ namespace Microsoft.SharePoint.Client
             {
                 using (ClientContext testContext = context.Clone(webFullUrl))
                 {
+                    testContext.AddUserAgent();
                     testContext.Load(testContext.Web, w => w.Title);
                     testContext.ExecuteQueryRetry();
                     exists = true;

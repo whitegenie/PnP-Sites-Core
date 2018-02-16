@@ -1493,6 +1493,7 @@ namespace OfficeDevPnP.Core.Framework.TimerJobs
                 var currentUrl = queue.Dequeue();
                 using (var webContext = siteContext.Clone(currentUrl))
                 {
+                    webContext.AddUserAgent();
                     webContext.Load(webContext.Web, web => web.Webs);
                     webContext.ExecuteQueryRetry();
                     foreach (var subWeb in webContext.Web.Webs)

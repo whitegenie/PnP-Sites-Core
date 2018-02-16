@@ -38,6 +38,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                 // we need to create a new context and use that one. Reloading the propertybag does not solve this.
                 var webUrl = web.EnsureProperty(w => w.Url);
                 var newContext = web.Context.Clone(webUrl);
+                newContext.AddUserAgent();
 
                 web = newContext.Web;
 

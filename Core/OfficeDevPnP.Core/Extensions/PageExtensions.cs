@@ -1102,6 +1102,8 @@ namespace Microsoft.SharePoint.Client
             {
                 using (var context = currentContext.Clone(fileWeb.Url))
                 {
+                    context.AddUserAgent();
+
 #if !SP2013
                     webPartPage.EnsureProperties(f => f.UniqueId);
                     var file = context.Web.GetFileById(webPartPage.UniqueId);

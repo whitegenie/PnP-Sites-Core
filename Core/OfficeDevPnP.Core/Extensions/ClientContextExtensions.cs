@@ -181,7 +181,9 @@ namespace Microsoft.SharePoint.Client
                 clientContext.Load(site);
                 clientContext.ExecuteQueryRetry();
             }
-            return clientContext.Clone(site.Url);
+            var ctx = clientContext.Clone(site.Url);
+            ctx.AddUserAgent();
+            return ctx;
         }
 
         /// <summary>

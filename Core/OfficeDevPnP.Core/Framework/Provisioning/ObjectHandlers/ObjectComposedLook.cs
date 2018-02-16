@@ -95,7 +95,9 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
                 SharePointConnector spConnectorRoot;
                 if (!site.Url.Equals(web.Url, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    spConnectorRoot = new SharePointConnector(web.Context.Clone(site.Url), site.Url, "dummy");
+                    var ctx = web.Context.Clone(site.Url);
+                      ctx.AddUserAgent();
+                    spConnectorRoot = new SharePointConnector(ctx, site.Url, "dummy");
                 }
                 else
                 {

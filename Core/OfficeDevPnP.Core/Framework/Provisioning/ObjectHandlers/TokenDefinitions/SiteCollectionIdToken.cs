@@ -16,6 +16,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers.TokenDefinitio
                 this.Web.EnsureProperty(w => w.Url);
                 using (ClientContext context = this.Web.Context.Clone(this.Web.Url))
                 {
+                    context.AddUserAgent();
                     context.Load(context.Site, s => s.Id);
                     context.ExecuteQueryRetry();
                     CacheValue = context.Site.Id.ToString();

@@ -121,6 +121,8 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers
 
                         using (var handlerContext = web.Context.Clone(web.Url))
                         {
+                            handlerContext.AddUserAgent();
+
                             template = handler.ExtractObjects(handlerContext.Web, template, creationInfo);
                         }
                     }

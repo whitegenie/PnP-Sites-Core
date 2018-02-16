@@ -16,6 +16,8 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers.TokenDefinitio
                 this.Web.EnsureProperty(w => w.Url);
                 using (ClientContext context = this.Web.Context.Clone(this.Web.Url))
                 {
+                    context.AddUserAgent();
+
                     List catalog;
                     // Check if the current web is a sub-site
                     if (Web.IsSubSite())

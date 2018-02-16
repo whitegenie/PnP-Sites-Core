@@ -775,6 +775,7 @@ namespace Microsoft.SharePoint.Client
             var subSitePath = "";
             using (var cc = web.Context.Clone(web.Url))
             {
+                cc.AddUserAgent();
                 cc.Load(cc.Site, s => s.Url);
                 cc.ExecuteQueryRetry();
                 siteCollectionUrl = cc.Site.Url;
@@ -1534,6 +1535,7 @@ namespace Microsoft.SharePoint.Client
                     {
                         using (var infrastructureContext = web.Context.Clone(infrastructureUrl))
                         {
+                            infrastructureContext.AddUserAgent();
                             var targetFolder = infrastructureContext.Web.EnsureFolderPath("Style Library/SP.Responsive.UI");
                             // Check if the file is there, if so, don't upload it.
                             var jsFile = targetFolder.GetFile("SP-Responsive-UI.js");

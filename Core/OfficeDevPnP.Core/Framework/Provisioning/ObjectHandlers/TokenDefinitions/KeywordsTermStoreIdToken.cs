@@ -17,6 +17,8 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.ObjectHandlers.TokenDefinitio
                 this.Web.EnsureProperty(w => w.Url);
                 using (ClientContext context = this.Web.Context.Clone(this.Web.Url))
                 {
+                    context.AddUserAgent();
+
                     TaxonomySession session = TaxonomySession.GetTaxonomySession(context);
                     var termStore = session.GetDefaultKeywordsTermStore();
                     context.Load(termStore, t => t.Id);

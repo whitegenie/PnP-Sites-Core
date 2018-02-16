@@ -89,6 +89,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.Connectors
 
             using (ClientContext cc = GetClientContext().Clone(GetConnectionString()))
             {
+                cc.AddUserAgent();
                 List list = cc.Web.GetListByUrl(GetDocumentLibrary(container));
                 string folders = GetUrlFolders(container);
 
@@ -139,6 +140,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.Connectors
 
             using (ClientContext cc = GetClientContext().Clone(GetConnectionString()))
             {
+                cc.AddUserAgent();
                 List list = cc.Web.GetListByUrl(GetDocumentLibrary(container));
                 string folders = GetUrlFolders(container);
 
@@ -273,6 +275,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.Connectors
             {
                 using (ClientContext cc = GetClientContext().Clone(GetConnectionString()))
                 {
+                    cc.AddUserAgent();
                     Folder spFolder;
 
                     if (!string.IsNullOrEmpty(container))
@@ -342,6 +345,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.Connectors
             {
                 using (ClientContext cc = GetClientContext().Clone(GetConnectionString()))
                 {
+                    cc.AddUserAgent();
                     string fileServerRelativeUrl = GetFileServerRelativeUrl(cc, fileName, container);
                     File file = cc.Web.GetFileByServerRelativeUrl(fileServerRelativeUrl);
                     cc.Load(file);
@@ -425,6 +429,7 @@ namespace OfficeDevPnP.Core.Framework.Provisioning.Connectors
             {
                 using (ClientContext cc = GetClientContext().Clone(GetConnectionString()))
                 {
+                    cc.AddUserAgent();
                     string fileServerRelativeUrl = GetFileServerRelativeUrl(cc, fileName, container);
                     var file = cc.Web.GetFileByServerRelativeUrl(fileServerRelativeUrl);
                     cc.Load(file);
